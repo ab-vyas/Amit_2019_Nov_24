@@ -8,12 +8,18 @@ const fetchPhoto = id => {
     .then(res => res.data)
 };
 
+async function fetchAllPhoto() {
+  const url = `https://jsonplaceholder.typicode.com/photos/`;
+  return await axios.get(url)
+    .then(res => res.data)
+}
+
 function all(items, fn) {
   const promises = items.map(item => fn(item));
   return Promise.all(promises);
 }
 
-function series(items, fn) {
+async function series(items, fn) {
   let result = [];
   return items.reduce((acc, item) => {
     acc = acc.then(() => {
@@ -32,9 +38,9 @@ function splitToChunks(items, chunkSize = 50) {
   return result;
 }
 
-function chunks(items, fn, chunkSize = 50) {
+async function chunks(items, fn, chunkSize = 50) {
   let result = [];
-  const chunks = splitToChunks(items, chunkSize);
+  const chunks = await splitToChunks(items, chunkSize);
   return series(chunks, chunk => {
     return all(chunk, fn)
       .then(res => result = result.concat(res))
@@ -45,8 +51,9 @@ function chunks(items, fn, chunkSize = 50) {
 export{
   getIdList,
   fetchPhoto,
-
+  splitToChunks,
   all,
   series,
-  chunks
+  chunks,
+  fetchAllPhoto
 };
