@@ -1,55 +1,46 @@
 <template>
     <div class="hello">
         <h1>{{ msg }}</h1>
-        <select v-model="selected">
-                                                          <template v-for="allposts in processedPosts">
-                                                              <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
-                                                                {{ option.title }}
-                                                              </option>
+        <br/>
+        <button v-on:click="add" class="btn btn-theme btn-default btn-xs pull-left">
+                                                <i class="fa fa-times inline"></i>
+                                                1. Generate Random Canvas
+                                        </button>
+        <br/>
+        <br/>
+        <div class="mainDiv">
+            <div class="leftDiv">
+                <select id="drpImages" v-model="selected">
+                                                    <template v-for="allposts in processedPosts">
+                                                        <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
+                                                            {{ option.title }}
+                                                            <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
+                                                        </option>
 </template>
-            </select><br/>
-<button v-on:click="add" class="btn btn-theme btn-default btn-xs pull-left" >
-<i class="fa fa-times inline"></i>
-1. Generate Random Canvas
-</button><br/>
-              
-            <span id='abc'>
-            <span v-for="item in canvas" v-bind:key="item" >
-                <span v-html="item"></span>
-            </span></span>
-
-            <button v-on:click="updateCanvasImage" class="btn btn-theme btn-default btn-xs pull-left" >
-<i class="fa fa-times inline"></i>
-1. Draw Image
-</button><br/>
-      <!-- <canvas id="canvas" width="200" height="200" style="border:1px solid #000000;"></canvas> -->
-        
+                </select>
+            </div>
+            <div class="rightDiv">
+                <button v-on:click="updateCanvasImage" class="btn btn-theme btn-default btn-xs pull-left" >
+                    <i class="fa fa-times inline"></i>
+                        1. Draw Image
+                </button>
+            </div>
+        </div>
+        <span id='abc'>
+        </span>
+        <br/>        
     </div>
 </template>
 
 <script>
-//import {getIdList, fetchPhoto, chunks,fetchAllPhoto } from '../helpers/helper.js';
 import { fetchAllPhoto } from '../helpers/helper.js';
 import { fabric } from 'fabric';
-
-//const { getIdList, fetchPhoto, chunks } = require('./helpers/helper');
-//const t0 = Date.now();
+import $ from 'jquery'
 var picData = [];
-fetchAllPhoto().then(res => picData.push(res));
 var totalCanvas = 0;
-/* eslint-disable no-console */
-// chunks(getIdList(100), fetchPhoto, 10)
-// .then(res=> {
-//     //const t1 = Date.now();
-//     // /* eslint-disable no-console */
-//     // console.log(`Fetch time: ${t1 - t0} ms`);
-//     // //tData.push(JSON.stringify(res));
-//     picData.push(res);
-//     /* eslint-disable no-console */
-//     console.log(picData);
-//      /* eslint-disable no-console */
-// });
 
+fetchAllPhoto().then(res => picData.push(res));
+/* eslint-disable no-console */
 function chunk32(array, size) {
     if (array) {
         const chunked_arr = [];
@@ -63,6 +54,7 @@ function chunk32(array, size) {
         return new Array();
     }
 }
+
 export default {
     name: 'HelloWorld',
     props: {
@@ -72,86 +64,113 @@ export default {
     data() {
         return {
             picData,
-            selected: 1,
-            canvas: []
+            selected: 1
         }
     },
-    // mounted: function() {
-    //     var canvas = new fabric.Canvas('canvas', {
-    //         width: 200,
-    //         height: 200
-    //     });
-    //     var rect = new fabric.Rect();
-    //     canvas.add(rect);
-    //     canvas.add(
-    //         new fabric.Rect({
-    //             width: 100,
-    //             height: 100,
-    //             left: 0,
-    //             top: 0,
-    //             fill: 'yellow'
-    //         }));
-    // },
     methods: {
         add() {
-            this.canvas = [];
-            var length = Math.floor(Math.random() * (5 - 2 + 1) ) + 2;
+            var cTag = document.getElementById("abc");
+            cTag.innerHTML = '';
+            var length = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
             totalCanvas = length;
             let i = 0;
             for (i = 1; i <= length; i++) {
-                this.canvas.push('<canvas id=' + i + ' width="200" height="200" style="border:1px solid #000000;"></canvas>');
+                this.generateCanvas(i);
             }
-
-            //var ctx = canvas.getContext('2d');
+        },
+        cancel(e) {
+            if (e.preventDefault) { e.preventDefault(); }
+            return false;
         },
         updateCanvasImage() {
-            const image = new window.Image();
-            image.src = "https://konvajs.org/assets/yoda.jpg";
-            image.onload = () => {
-                // set image only when it is loaded
-                this.image = image;
-            };
-            this.drawCanvasImage(image);
-        },
+            // const image = new fabric.Image();
+            // image.src="https://via.placeholder.com/150/1ee8a4";
+            // image.onload = () => {
+            //     this.image = image;
+            // };
 
-        drawCanvasImage(img) {
-            //var canvas = this.$refs.imageCanvas;
-            var t = Math.floor(Math.random() * (totalCanvas - 2 + 1) + 2).toString();
+            var t = Math.floor(Math.random() * (totalCanvas - 2) + 2).toString();
             console.log(totalCanvas + "" + t)
-            var canvas = new fabric.Canvas(t, {
-                width: 200,
-                height: 200
-            });
-            canvas.width = img.width;
-            canvas.height = img.height;
+            for (var i = 1; i <= totalCanvas; i++) {
+                this.removeCanvas(i);
+            }
 
-            var ctx = canvas.getContext('2d');
-            ctx.drawImage(img,0,0);
+            console.log(this.aryCanvas)
+            var pugImg = new Image();
+            var el = document.getElementById(t).fabric;
+
+            el.remove(el.getObjects());
+            el.clear();
+            el.renderAll();
+
+            pugImg.src = $('#_' + this.selected).val();
+            pugImg.onload = function() {
+                var pug = new fabric.Image(pugImg, {
+                    //angle: 45,
+                    width: 150,
+                    height: 150,
+                    left: 10,
+                    top: 10
+                });
+                el.add(pug);
+                el.centerObject(pug);
+            };
+            el.on('mouse:down', function() {
+                if (this.getActiveObject()) {
+                    activeObject = $.extend({}, this.getActiveObject());
+                    initialCanvas = this.lowerCanvasEl.id;
+                }
+            });
+            $(document).on('mouseup', function(evt) {
+                if (evt.target.localName === 'canvas') {
+                    var canvasId = $(evt.target).siblings().attr('id');
+                    var dropCanvas = document.getElementById(canvasId).fabric;
+                    if (dropCanvas !== initialCanvas) {
+                        for (var i = 1; i <= totalCanvas; i++) {
+                            var el = document.getElementById(i).fabric;
+
+                            el.remove(el.getObjects());
+                            el.clear();
+                            el.renderAll();
+                        }
+                        dropCanvas.add(activeObject);
+                        dropCanvas.renderAll();
+                        dropCanvas.centerObject(activeObject);
+                    }
+                }
+            });
+            var initialCanvas = '';
+            var activeObject = {};
+        },
+        insertAfter(referenceNode, newNode) {
+            referenceNode.insertBefore(newNode, referenceNode.nextSibling);
+        },
+        generateCanvas(id) {
+            console.log(id);
+            var canvas = document.createElement('canvas');
+            canvas.id = id;
+            canvas.width = 200;
+            canvas.height = 200;
+            canvas.style.zIndex = 8;
+            canvas.style.border = "1px solid";
+            var cTag = document.getElementById("abc");
+            cTag.appendChild(canvas);
+
+            var gradCanvas = new fabric.Canvas(canvas, { width: 200, height: 200 });
+            document.getElementById(id).fabric = gradCanvas;
+            var ctx = gradCanvas.getContext('2d');
+            console.log(ctx);
+        },
+        removeCanvas(id) {
+            var x = document.getElementById(id).fabric;
+            var ctx = x.getContext('2d');
+            ctx.clearRect(0, 0, x.width, x.height);
         }
     },
     computed: {
         processedPosts() {
             let items = chunk32(this.picData[0], 10);
-            //return this.$nextTick(() => {
             return items;
-            //})
-            //return chunk32(this.picData[0], 10);
-            // let posts = this.picData;
-
-            // // // Add image_url attribute
-            // // posts.map(post => {
-            // //     let imgObj = post.multimedia.find(media => media.format === "superJumbo");
-            // //     post.image_url = imgObj ? imgObj.url : "http://placehold.it/300x200?text=N/A";
-            // // });
-
-            // // Put Array into Chunks
-            // let i, j, chunkedArray = [],
-            //     chunk = 10;
-            // for (i = 0, j = 0; i < posts.length; i += chunk, j++) {
-            //     chunkedArray[j] = posts.slice(i, i + chunk);
-            // }
-            // console.log(chunkedArray[0]);
-            // return chunkedArray[0];
         }
     }
 }
