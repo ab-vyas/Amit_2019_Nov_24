@@ -3,19 +3,19 @@
         <h1>{{ msg }}</h1>
         <br/>
         <button v-on:click="add" class="btn btn-theme btn-default btn-xs pull-left">
-                                                <i class="fa fa-times inline"></i>
-                                                1. Generate Random Canvas
-                                        </button>
+                                                            <i class="fa fa-times inline"></i>
+                                                            1. Generate Random Canvas
+                                                    </button>
         <br/>
         <br/>
         <div class="mainDiv">
             <div class="leftDiv">
                 <select id="drpImages" v-model="selected">
-                                                    <template v-for="allposts in processedPosts">
-                                                        <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
-                                                            {{ option.title }}
-                                                            <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
-                                                        </option>
+                                                                <template v-for="allposts in processedPosts">
+                                                                    <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
+                                                                        {{ option.title }}
+                                                                        <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
+                                                                    </option>
 </template>
                 </select>
             </div>
@@ -90,12 +90,10 @@ export default {
             // };
 
             var t = Math.floor(Math.random() * (totalCanvas - 2) + 2).toString();
-            console.log(totalCanvas + "" + t)
             for (var i = 1; i <= totalCanvas; i++) {
                 this.removeCanvas(i);
             }
 
-            console.log(this.aryCanvas)
             var pugImg = new Image();
             var el = document.getElementById(t).fabric;
 
@@ -118,26 +116,45 @@ export default {
             el.on('mouse:down', function() {
                 if (this.getActiveObject()) {
                     activeObject = $.extend({}, this.getActiveObject());
+                    console.log('active obj')
+                    console.log(activeObject);
                     initialCanvas = this.lowerCanvasEl.id;
                 }
             });
             $(document).on('mouseup', function(evt) {
-                if (evt.target.localName === 'canvas') {
+                if (evt.target.localName === 'canvas' && initialCanvas != '') {
                     var canvasId = $(evt.target).siblings().attr('id');
-                    var dropCanvas = document.getElementById(canvasId).fabric;
-                    if (dropCanvas !== initialCanvas) {
-                        for (var i = 1; i <= totalCanvas; i++) {
-                            var el = document.getElementById(i).fabric;
+                    if (initialCanvas != canvasId) {
+                        var dropCanvas = document.getElementById(canvasId).fabric;
+                        if (canvasId !== initialCanvas) {
+                            for (var i = 1; i <= totalCanvas; i++) {
+                                if (parseInt(canvasId) != i) {
+                                    var el = document.getElementById(i).fabric;
+                                    el.discardActiveObject();
+                                    el.renderAll();
+                                }
+                            }
+                            if (activeObject) {
+                                dropCanvas.discardActiveObject();
+                                dropCanvas.renderAll();
+                                var group = new fabric.Group(activeObject);
+                                dropCanvas.add(group);
 
-                            el.remove(el.getObjects());
-                            el.clear();
-                            el.renderAll();
+                                dropCanvas.add(activeObject);
+                                dropCanvas.on('mouse:down', function() {
+                                    if (this.getActiveObject()) {
+                                        activeObject = $.extend({}, this.getActiveObject());
+                                        initialCanvas = this.lowerCanvasEl.id;
+                                        console.log('inner  obj')
+                    console.log(activeObject);
+                                    }
+                                });
+                            }
                         }
-                        dropCanvas.add(activeObject);
-                        dropCanvas.renderAll();
-                        dropCanvas.centerObject(activeObject);
                     }
                 }
+                initialCanvas = '';
+                activeObject = {};
             });
             var initialCanvas = '';
             var activeObject = {};
@@ -146,17 +163,16 @@ export default {
             referenceNode.insertBefore(newNode, referenceNode.nextSibling);
         },
         generateCanvas(id) {
-            console.log(id);
             var canvas = document.createElement('canvas');
             canvas.id = id;
-            canvas.width = 200;
-            canvas.height = 200;
+            canvas.width = 400;
+            canvas.height = 400;
             canvas.style.zIndex = 8;
             canvas.style.border = "1px solid";
             var cTag = document.getElementById("abc");
             cTag.appendChild(canvas);
 
-            var gradCanvas = new fabric.Canvas(canvas, { width: 200, height: 200 });
+            var gradCanvas = new fabric.Canvas(canvas, { width: 400, height: 400 });
             document.getElementById(id).fabric = gradCanvas;
             var ctx = gradCanvas.getContext('2d');
             console.log(ctx);
@@ -165,6 +181,9 @@ export default {
             var x = document.getElementById(id).fabric;
             var ctx = x.getContext('2d');
             ctx.clearRect(0, 0, x.width, x.height);
+            x.remove(x.getObjects());
+            x.clear();
+            x.renderAll();
         }
     },
     computed: {
