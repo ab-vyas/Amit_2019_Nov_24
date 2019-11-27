@@ -3,19 +3,19 @@
         <h1>{{ msg }}</h1>
         <br/>
         <button v-on:click="add" class="btn btn-theme btn-default btn-xs pull-left">
-                                                            <i class="fa fa-times inline"></i>
-                                                            1. Generate Random Canvas
-                                                    </button>
+                                                                                        <i class="fa fa-times inline"></i>
+                                                                                        1. Generate Random Canvas
+                                                                                </button>
         <br/>
         <br/>
         <div class="mainDiv">
             <div class="leftDiv">
                 <select id="drpImages" v-model="selected">
-                                                                <template v-for="allposts in processedPosts">
-                                                                    <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
-                                                                        {{ option.title }}
-                                                                        <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
-                                                                    </option>
+                                                                                            <template v-for="allposts in processedPosts">
+                                                                                                <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
+                                                                                                    {{ option.title }}
+                                                                                                    <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
+                                                                                                </option>
 </template>
                 </select>
             </div>
@@ -83,28 +83,22 @@ export default {
             return false;
         },
         updateCanvasImage() {
-            // const image = new fabric.Image();
-            // image.src="https://via.placeholder.com/150/1ee8a4";
-            // image.onload = () => {
-            //     this.image = image;
-            // };
 
             var t = Math.floor(Math.random() * (totalCanvas - 2) + 2).toString();
-            for (var i = 1; i <= totalCanvas; i++) {
-                this.removeCanvas(i);
-            }
+            // for (var i = 1; i <= totalCanvas; i++) {
+            //     this.removeCanvas(i);
+            // }
 
             var pugImg = new Image();
             var el = document.getElementById(t).fabric;
 
-            el.remove(el.getObjects());
-            el.clear();
-            el.renderAll();
+            // el.remove(el.getObjects());
+            // el.clear();
+            // el.renderAll();
 
             pugImg.src = $('#_' + this.selected).val();
             pugImg.onload = function() {
                 var pug = new fabric.Image(pugImg, {
-                    //angle: 45,
                     width: 150,
                     height: 150,
                     left: 10,
@@ -115,9 +109,9 @@ export default {
             };
             el.on('mouse:down', function() {
                 if (this.getActiveObject()) {
-                    activeObject = $.extend({}, this.getActiveObject());
-                    console.log('active obj')
-                    console.log(activeObject);
+                    this.getActiveObject().clone(function(cloned) {
+                        _clipboard = cloned;
+                    });
                     initialCanvas = this.lowerCanvasEl.id;
                 }
             });
@@ -127,37 +121,44 @@ export default {
                     if (initialCanvas != canvasId) {
                         var dropCanvas = document.getElementById(canvasId).fabric;
                         if (canvasId !== initialCanvas) {
-                            for (var i = 1; i <= totalCanvas; i++) {
-                                if (parseInt(canvasId) != i) {
-                                    var el = document.getElementById(i).fabric;
-                                    el.discardActiveObject();
-                                    el.renderAll();
-                                }
-                            }
-                            if (activeObject) {
+                            _clipboard.clone(function(clonedObj) {
                                 dropCanvas.discardActiveObject();
-                                dropCanvas.renderAll();
-                                var group = new fabric.Group(activeObject);
-                                dropCanvas.add(group);
-
-                                dropCanvas.add(activeObject);
+                                clonedObj.set({
+                                    left: clonedObj.left + 10,
+                                    top: clonedObj.top + 10,
+                                    evented: true,
+                                });
+                                if (clonedObj.type === 'activeSelection') {
+                                    // active selection needs a reference to the canvas.
+                                    clonedObj.canvas = dropCanvas;
+                                    clonedObj.forEachObject(function(obj) {
+                                        dropCanvas.add(obj);
+                                    });
+                                    // this should solve the unselectability
+                                    clonedObj.setCoords();
+                                } else {
+                                    dropCanvas.add(clonedObj);
+                                }
+                                _clipboard.top += 10;
+                                _clipboard.left += 10;
+                                dropCanvas.setActiveObject(clonedObj);
+                                dropCanvas.requestRenderAll();
                                 dropCanvas.on('mouse:down', function() {
                                     if (this.getActiveObject()) {
-                                        activeObject = $.extend({}, this.getActiveObject());
+                                        this.getActiveObject().clone(function(cloned) {
+                                            _clipboard = cloned;
+                                        });
                                         initialCanvas = this.lowerCanvasEl.id;
-                                        console.log('inner  obj')
-                    console.log(activeObject);
                                     }
                                 });
-                            }
+                            });
                         }
                     }
                 }
                 initialCanvas = '';
-                activeObject = {};
             });
             var initialCanvas = '';
-            var activeObject = {};
+            var _clipboard;
         },
         insertAfter(referenceNode, newNode) {
             referenceNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -165,26 +166,26 @@ export default {
         generateCanvas(id) {
             var canvas = document.createElement('canvas');
             canvas.id = id;
-            canvas.width = 400;
-            canvas.height = 400;
+            canvas.width = 300;
+            canvas.height = 300;
             canvas.style.zIndex = 8;
             canvas.style.border = "1px solid";
             var cTag = document.getElementById("abc");
             cTag.appendChild(canvas);
 
-            var gradCanvas = new fabric.Canvas(canvas, { width: 400, height: 400 });
+            var gradCanvas = new fabric.Canvas(canvas, { width: 300, height: 300 });
             document.getElementById(id).fabric = gradCanvas;
             var ctx = gradCanvas.getContext('2d');
             console.log(ctx);
         },
-        removeCanvas(id) {
-            var x = document.getElementById(id).fabric;
-            var ctx = x.getContext('2d');
-            ctx.clearRect(0, 0, x.width, x.height);
-            x.remove(x.getObjects());
-            x.clear();
-            x.renderAll();
-        }
+        // removeCanvas(id) {
+        //     var x = document.getElementById(id).fabric;
+        //     var ctx = x.getContext('2d');
+        //     ctx.clearRect(0, 0, x.width, x.height);
+        //     x.remove(x.getObjects());
+        //     x.clear();
+        //     x.renderAll();
+        // }
     },
     computed: {
         processedPosts() {
