@@ -112,6 +112,7 @@ export default {
                     this.getActiveObject().clone(function(cloned) {
                         _clipboard = cloned;
                     });
+                                        console.log('get',_clipboard);
                     initialCanvas = this.lowerCanvasEl.id;
                 }
             });
@@ -132,7 +133,7 @@ export default {
                                     // active selection needs a reference to the canvas.
                                     clonedObj.canvas = dropCanvas;
                                     clonedObj.forEachObject(function(obj) {
-                                        dropCanvas.add(obj);
+                                        dropCanvas.add(obj);                                        
                                     });
                                     // this should solve the unselectability
                                     clonedObj.setCoords();
@@ -148,6 +149,7 @@ export default {
                                         this.getActiveObject().clone(function(cloned) {
                                             _clipboard = cloned;
                                         });
+                                        console.log('set',_clipboard);
                                         initialCanvas = this.lowerCanvasEl.id;
                                     }
                                 });
@@ -155,7 +157,7 @@ export default {
                         }
                     }
                 }
-                initialCanvas = '';
+                initialCanvas = '';                
             });
             var initialCanvas = '';
             var _clipboard;
