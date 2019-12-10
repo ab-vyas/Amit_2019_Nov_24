@@ -3,20 +3,20 @@
         <h1>{{ msg }}</h1>
         <br/>
         <button v-on:click="add" class="btn btn-theme btn-default btn-xs pull-left">
-                                                                                        <i class="fa fa-times inline"></i>
-                                                                                        1. Generate Random Canvas
-                                                                                </button>
+                <i class="fa fa-times inline"></i>
+                1. Generate Random Canvas
+        </button>
         <br/>
         <br/>
         <div class="mainDiv">
             <div class="leftDiv">
                 <select id="drpImages" v-model="selected">
-                                                                                            <template v-for="allposts in processedPosts">
-                                                                                                <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
-                                                                                                    {{ option.title }}
-                                                                                                    <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
-                                                                                                </option>
-</template>
+                    <template v-for="allposts in processedPosts">
+                        <option v-for="option in allposts" v-bind:value="option.id" v-bind:key="option.id">
+                            {{ option.title }}
+                            <input v-bind:id="'_'+option.id" type="hidden" v-bind:value="option.thumbnailUrl"/>
+                        </option>
+                    </template>
                 </select>
             </div>
             <div class="rightDiv">
@@ -107,7 +107,7 @@ export default {
                 el.add(pug);
                 el.centerObject(pug);
             };
-            el.on('mouse:down', function() {
+            el.off('mouse:down').on('mouse:down', function() {
                 if (this.getActiveObject()) {
                     this.getActiveObject().clone(function(cloned) {
                         _clipboard = cloned;
@@ -116,12 +116,24 @@ export default {
                     initialCanvas = this.lowerCanvasEl.id;
                 }
             });
-            $(document).on('mouseup', function(evt) {
+            $(document).off('mouseup').on('mouseup', function(evt) {
                 if (evt.target.localName === 'canvas' && initialCanvas != '') {
                     var canvasId = $(evt.target).siblings().attr('id');
                     if (initialCanvas != canvasId) {
                         var dropCanvas = document.getElementById(canvasId).fabric;
                         if (canvasId !== initialCanvas) {
+                                var x = document.getElementById(initialCanvas).fabric;
+                                //var ctx = x.getContext('2d');
+                                console.log('initial canvas',x.getActiveObjects());
+                                //.remove();
+                                //var ele = x.getActiveObjects();
+                                
+                                x.getActiveObjects().forEach(ele => {
+                                    x.remove(ele);
+                                });
+                                
+                                //x.clear();
+                                x.renderAll();
                             _clipboard.clone(function(clonedObj) {
                                 dropCanvas.discardActiveObject();
                                 clonedObj.set({
@@ -144,7 +156,7 @@ export default {
                                 _clipboard.left += 10;
                                 dropCanvas.setActiveObject(clonedObj);
                                 dropCanvas.requestRenderAll();
-                                dropCanvas.on('mouse:down', function() {
+                                dropCanvas.off('mouse:down').on('mouse:down', function() {
                                     if (this.getActiveObject()) {
                                         this.getActiveObject().clone(function(cloned) {
                                             _clipboard = cloned;
@@ -153,6 +165,8 @@ export default {
                                         initialCanvas = this.lowerCanvasEl.id;
                                     }
                                 });
+
+                                
                             });
                         }
                     }
